@@ -24,23 +24,31 @@ func record(input []int, handler func() int, offset int) ([]int, error) {
 	if input[offset] == 99 {
 		return input, nil
 	}
-	var stepping int
+	var pointer int
 	i := input[offset]
 	modeSet, operation := extractOpcode(i)
 
 	switch operation {
 	case 1:
-		stepping = opcodeOne(input, offset, modeSet)
+		pointer = addition(input, offset, modeSet)
 	case 2:
-		stepping = opcodeTwo(input, offset, modeSet)
+		pointer = multiplication(input, offset, modeSet)
 	case 3:
-		stepping = opcodeThree(input, offset, modeSet, handler)
+		pointer = readInput(input, offset, modeSet, handler)
 	case 4:
-		stepping = opcodeFour(input, offset, modeSet)
+		pointer = output(input, offset, modeSet)
+	case 5:
+		pointer = jumpIfTrue(input, offset, modeSet)
+	case 6:
+		pointer = jumpIfFalse(input, offset, modeSet)
+	case 7:
+		pointer = lessThan(input, offset, modeSet)
+	case 8:
+		pointer = equals(input, offset, modeSet)
 	default:
 		return nil, fmt.Errorf("unknown operation %d", input[offset])
 	}
-	return record(input, handler, offset+stepping)
+	return record(input, handler, pointer)
 }
 
 func modeSet(i int, index int, memo []int) []int {
@@ -60,31 +68,73 @@ func val(input []int, offset int, modeSet int) int {
 	}
 	return input[offset]
 }
-func opcodeOne(input []int, offset int,  modeSet []int) int {
+func addition(input []int, offset int,  modeSet []int) int {
 	a := val(input, offset+1, modeSet[2])
 	b := val(input, offset+2, modeSet[1])
 	c := input[offset+3]
 	input[c] = a + b
-	return 4
+	return offset + 4
 }
 
-func opcodeTwo(input []int, offset int,  modeSet []int) int {
+func multiplication(input []int, offset int,  modeSet []int) int {
 	a := val(input, offset+1, modeSet[2])
 	b := val(input, offset+2, modeSet[1])
 	c := input[offset+3]
 	input[c] = a * b
-	return 4
+	return offset + 4
 }
 
-func opcodeThree(input []int, offset int,  modeSet []int, handler func() int)  int {
+func readInput(input []int, offset int,  modeSet []int, handler func() int)  int {
 	i := handler()
 	target := input[offset+1]
 	input[target] = i
-	return 2
+	return offset + 2
 }
 
-func opcodeFour(input []int, offset int,  modeSet []int)  int {
+func output(input []int, offset int, modeSet []int)  int {
 	target := input[offset+1]
 	fmt.Printf("%d\n", input[target])
-	return 2
+	return offset + 2
+}
+
+func jumpIfTrue(input []int, offset int, modeSet []int) int {
+	a := val(input, offset+1, modeSet[2])
+	b := val(input, offset+2, modeSet[1])
+	if a != 0 {
+		return b
+	}
+	return offset+3
+}
+
+func jumpIfFalse(input []int, offset int, modeSet []int) int {
+	a := val(input, offset+1, modeSet[2])
+	b := val(input, offset+2, modeSet[1])
+	if a == 0 {
+		return b
+	}
+	return offset+3
+}
+
+func lessThan(input []int, offset int, modeSet []int) int {
+	a := val(input, offset+1, modeSet[2])
+	b := val(input, offset+2, modeSet[1])
+	c := input[offset+3]
+	if a < b {
+		input[c] = 1
+	} else {
+		input[c] = 0
+	}
+	return offset + 4
+}
+
+func equals(input []int, offset int, modeSet []int) int {
+	a := val(input, offset+1, modeSet[2])
+	b := val(input, offset+2, modeSet[1])
+	c := input[offset+3]
+	if a == b {
+		input[c] = 1
+	} else {
+		input[c] = 0
+	}
+	return offset + 4
 }
