@@ -13,7 +13,7 @@ func main() {
 	}
 	planets := parse(strings.TrimSpace(string(input)))
 	fmt.Printf("total orbits: %d\n", planets.countAllOrbits())
-	
+
 	fmt.Printf("orbital transfers: %d\n", planets.getDistance("YOU", "SAN"))
 }
 
@@ -89,14 +89,14 @@ func travelTo(pathTo []string, index int, path []string) []string {
 		return path
 	}
 	planet := pathTo[index]
-	return travelTo(pathTo, index - 1, append(path, planet))
+	return travelTo(pathTo, index-1, append(path, planet))
 }
 
 func index(s []string, e string) int {
-    for i, a := range s {
-        if a == e {
-            return i
-        }
-    }
-    return -1
+	for i, a := range s {
+		if a == e {
+			return i
+		}
+	}
+	return -1
 }

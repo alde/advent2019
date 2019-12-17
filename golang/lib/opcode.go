@@ -10,9 +10,9 @@ func ResetCode(input []int, noun int, verb int) ([]int, error) {
 	input[1] = verb
 
 	return OpCode(input, func() (i int) {
-			fmt.Scan(&i)
-			return i
-		})
+		fmt.Scan(&i)
+		return i
+	})
 }
 
 // OpCode runs the computer
@@ -56,11 +56,11 @@ func modeSet(i int, index int, memo []int) []int {
 		return memo
 	}
 	memo[index] = i % 10
-	return modeSet(i / 10, index - 1, memo)
+	return modeSet(i/10, index-1, memo)
 }
 
 func extractOpcode(i int) ([]int, int) {
-	return modeSet(i / 100, 2, []int{0,0,0}), i % 100
+	return modeSet(i/100, 2, []int{0, 0, 0}), i % 100
 }
 func val(input []int, offset int, modeSet int) int {
 	if modeSet == 0 {
@@ -68,7 +68,7 @@ func val(input []int, offset int, modeSet int) int {
 	}
 	return input[offset]
 }
-func addition(input []int, offset int,  modeSet []int) int {
+func addition(input []int, offset int, modeSet []int) int {
 	a := val(input, offset+1, modeSet[2])
 	b := val(input, offset+2, modeSet[1])
 	c := input[offset+3]
@@ -76,7 +76,7 @@ func addition(input []int, offset int,  modeSet []int) int {
 	return offset + 4
 }
 
-func multiplication(input []int, offset int,  modeSet []int) int {
+func multiplication(input []int, offset int, modeSet []int) int {
 	a := val(input, offset+1, modeSet[2])
 	b := val(input, offset+2, modeSet[1])
 	c := input[offset+3]
@@ -84,14 +84,14 @@ func multiplication(input []int, offset int,  modeSet []int) int {
 	return offset + 4
 }
 
-func readInput(input []int, offset int,  modeSet []int, handler func() int)  int {
+func readInput(input []int, offset int, modeSet []int, handler func() int) int {
 	i := handler()
 	target := input[offset+1]
 	input[target] = i
 	return offset + 2
 }
 
-func output(input []int, offset int, modeSet []int)  int {
+func output(input []int, offset int, modeSet []int) int {
 	target := input[offset+1]
 	fmt.Printf("%d\n", input[target])
 	return offset + 2
@@ -103,7 +103,7 @@ func jumpIfTrue(input []int, offset int, modeSet []int) int {
 	if a != 0 {
 		return b
 	}
-	return offset+3
+	return offset + 3
 }
 
 func jumpIfFalse(input []int, offset int, modeSet []int) int {
@@ -112,7 +112,7 @@ func jumpIfFalse(input []int, offset int, modeSet []int) int {
 	if a == 0 {
 		return b
 	}
-	return offset+3
+	return offset + 3
 }
 
 func lessThan(input []int, offset int, modeSet []int) int {

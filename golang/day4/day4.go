@@ -74,7 +74,6 @@ func innerPartTwo(from, to, validCount int) int {
 	return innerPartTwo(from+1, to, validCount)
 }
 
-
 func partTwoValidator(candidate int) bool {
 	list := intToSlice(candidate, []int{})
 	head, tail := list[0], list[1:]
@@ -91,7 +90,7 @@ func partTwoValidatorInner(head int, list []int, memo map[int]int, valid bool) b
 		return partTwoValidatorInner(newHead, tail, memo, true)
 	}
 	if newHead == head {
-		if _, ok := memo[newHead] ; !ok {
+		if _, ok := memo[newHead]; !ok {
 			memo[newHead] = 1
 		}
 		memo[newHead]++
