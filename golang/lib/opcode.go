@@ -12,15 +12,17 @@ func ResetCode(input []int, noun int, verb int) ([]int, error) {
 	return OpCode(input, func() (i int) {
 		fmt.Scan(&i)
 		return i
+	}, func(i int) {
+		fmt.Printf("%d\n", i)
 	})
 }
 
 // OpCode runs the computer
-func OpCode(input []int, handler func() int) ([]int, error) {
-	return record(input, handler, 0)
+func OpCode(input []int, inputHandler func() int, outputHandler func(i int)) ([]int, error) {
+	return record(input, inputHandler, outputHandler, 0)
 }
 
-func record(input []int, handler func() int, offset int) ([]int, error) {
+func record(input []int, inputHandler func() int, outputHandler func(i int), offset int) ([]int, error) {
 	if input[offset] == 99 {
 		return input, nil
 	}
@@ -34,9 +36,9 @@ func record(input []int, handler func() int, offset int) ([]int, error) {
 	case 2:
 		pointer = multiplication(input, offset, modeSet)
 	case 3:
-		pointer = readInput(input, offset, modeSet, handler)
+		pointer = readInput(input, offset, modeSet, inputHandler)
 	case 4:
-		pointer = output(input, offset, modeSet)
+		pointer = output(input, offset, modeSet, outputHandler)
 	case 5:
 		pointer = jumpIfTrue(input, offset, modeSet)
 	case 6:
@@ -48,7 +50,7 @@ func record(input []int, handler func() int, offset int) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("unknown operation %d", input[offset])
 	}
-	return record(input, handler, pointer)
+	return record(input, inputHandler, outputHandler, pointer)
 }
 
 func modeSet(i int, index int, memo []int) []int {
@@ -91,9 +93,9 @@ func readInput(input []int, offset int, modeSet []int, handler func() int) int {
 	return offset + 2
 }
 
-func output(input []int, offset int, modeSet []int) int {
+func output(input []int, offset int, modeSet []int, handler func(i int)) int {
 	target := input[offset+1]
-	fmt.Printf("%d\n", input[target])
+	handler(input[target])
 	return offset + 2
 }
 

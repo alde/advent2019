@@ -22,6 +22,8 @@ func Test_OpCode(t *testing.T) {
 		t.Run(fmt.Sprintf("%+v", td.in), func(t *testing.T) {
 			actual, _ := OpCode(td.in, func() int {
 				return 1
+			}, func(i int) {
+				fmt.Printf("%d\n", i)
 			})
 			validate(t, actual, td.out)
 		})
