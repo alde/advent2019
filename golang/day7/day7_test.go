@@ -1,4 +1,4 @@
-package main
+package day7
 
 import (
 	"fmt"
@@ -18,12 +18,29 @@ func Test_maxThrust(t *testing.T) {
 	}
 	for i, td := range testData {
 		t.Run(fmt.Sprintf("testcase %d", i), func(t *testing.T) {
-			actual := maxThrust(td.in)
+			actual := maxThrust(td.in, []int{0, 1, 2, 3, 4})
 			assert.Equal(t, td.out, actual)
 		})
 	}
 }
 
+func Test_feedbackLoop(t *testing.T) {
+	testData := []struct {
+		in  []int
+		out int
+	}{
+		{[]int{3, 26, 1001, 26, -4, 26, 3, 27, 1002, 27, 2, 27, 1, 27, 26, 27, 4, 27, 1001, 28, -1, 28, 1005, 28, 6, 99, 0, 0, 5}, 139629729},
+		{[]int{3, 52, 1001, 52, -5, 52, 3, 53, 1, 52, 56, 54, 1007, 54, 5, 55, 1005, 55, 26, 1001, 54,
+			-5, 54, 1105, 1, 12, 1, 53, 54, 53, 1008, 54, 0, 55, 1001, 55, 1, 55, 2, 53, 55, 53, 4,
+			53, 1001, 56, -1, 56, 1005, 56, 6, 99, 0, 0, 0, 0, 10}, 18216},
+	}
+	for i, td := range testData {
+		t.Run(fmt.Sprintf("testcase %d", i), func(t *testing.T) {
+			actual := maxThrust(td.in, []int{5, 6, 7, 8, 9})
+			assert.Equal(t, td.out, actual)
+		})
+	}
+}
 func Test_permutation(t *testing.T) {
 	testData := []struct {
 		in  []int

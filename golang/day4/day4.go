@@ -1,13 +1,15 @@
-package main
+package day4
 
-import "fmt"
+import "github.com/sirupsen/logrus"
 
-func main() {
+// Run todays challenge
+func Run() {
+	logrus.Info("Day 4")
 	count1 := partOne(256310, 732736)
-	fmt.Printf("%d passcodes in the given range\n", count1)
+	logrus.WithField("passcodes", count1).Info("in given range")
 
 	count2 := partTwo(256310, 732736)
-	fmt.Printf("%d passcodes in the given range with new constraints\n", count2)
+	logrus.WithField("passcodes", count2).Info("in given range with new constraints")
 }
 
 func intToSlice(n int, sequence []int) []int {

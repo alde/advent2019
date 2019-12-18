@@ -1,22 +1,24 @@
-package main
+package day7
 
 import (
-	"fmt"
-
 	"alde.nu/advent/lib"
+	"github.com/sirupsen/logrus"
 )
 
-func main() {
+// Run todays challenge
+func Run() {
+	logrus.Info("Day 7")
 	input := []int{3, 8, 1001, 8, 10, 8, 105, 1, 0, 0, 21, 34, 43, 64, 85, 98, 179, 260, 341, 422, 99999, 3, 9, 1001, 9, 3, 9, 102, 3, 9, 9, 4, 9, 99, 3, 9, 102, 5, 9, 9, 4, 9, 99, 3, 9, 1001, 9, 2, 9, 1002, 9, 4, 9, 1001, 9, 3, 9, 1002, 9, 4, 9, 4, 9, 99, 3, 9, 1001, 9, 3, 9, 102, 3, 9, 9, 101, 4, 9, 9, 102, 3, 9, 9, 4, 9, 99, 3, 9, 101, 2, 9, 9, 1002, 9, 3, 9, 4, 9, 99, 3, 9, 101, 1, 9, 9, 4, 9, 3, 9, 1002, 9, 2, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 1001, 9, 1, 9, 4, 9, 3, 9, 1001, 9, 1, 9, 4, 9, 3, 9, 101, 2, 9, 9, 4, 9, 3, 9, 1001, 9, 2, 9, 4, 9, 99, 3, 9, 101, 1, 9, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 101, 2, 9, 9, 4, 9, 3, 9, 1001, 9, 1, 9, 4, 9, 3, 9, 1002, 9, 2, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 1002, 9, 2, 9, 4, 9, 3, 9, 101, 1, 9, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 1002, 9, 2, 9, 4, 9, 99, 3, 9, 101, 1, 9, 9, 4, 9, 3, 9, 1002, 9, 2, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 1001, 9, 2, 9, 4, 9, 3, 9, 1001, 9, 1, 9, 4, 9, 3, 9, 101, 1, 9, 9, 4, 9, 3, 9, 1002, 9, 2, 9, 4, 9, 3, 9, 1001, 9, 2, 9, 4, 9, 3, 9, 101, 1, 9, 9, 4, 9, 3, 9, 101, 1, 9, 9, 4, 9, 99, 3, 9, 101, 1, 9, 9, 4, 9, 3, 9, 1001, 9, 1, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 1001, 9, 1, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 1001, 9, 2, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 101, 1, 9, 9, 4, 9, 3, 9, 1001, 9, 2, 9, 4, 9, 3, 9, 1002, 9, 2, 9, 4, 9, 99, 3, 9, 101, 2, 9, 9, 4, 9, 3, 9, 101, 2, 9, 9, 4, 9, 3, 9, 1002, 9, 2, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 101, 2, 9, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 3, 9, 1001, 9, 2, 9, 4, 9, 3, 9, 1002, 9, 2, 9, 4, 9, 3, 9, 1001, 9, 1, 9, 4, 9, 3, 9, 102, 2, 9, 9, 4, 9, 99}
 	// part one
-	fmt.Printf("max thrust: %d\n", maxThrust(input))
+	logrus.WithField("signal", maxThrust(input, []int{0, 1, 2, 3, 4})).Info("max thrust")
+	// part two
+	logrus.WithField("signal", maxThrust(input, []int{5, 6, 7, 8, 9})).Info("max thrust with feedback loop")
 }
 
-func maxThrust(input []int) int {
+func maxThrust(input []int, phases []int) int {
 	max := 0
-	for _, p := range permutation([]int{0, 1, 2, 3, 4}) {
-		cpy := input
-		res := runComputer(cpy, p)
+	for _, phase := range permutation(phases) {
+		res := runComputer(input, phase)
 		if res > max {
 			max = res
 		}
@@ -25,41 +27,52 @@ func maxThrust(input []int) int {
 }
 
 func runComputer(input []int, phase []int) int {
-	nextInput := 0
-	indicator := false
-	for _, p := range phase {
-		cpy := input
-		inputHandler := func() int {
-			if indicator {
-				indicator = false
-				return nextInput
-			}
-			indicator = true
-			return p
-		}
-		outputHandler := func(i int) {
-			nextInput = i
-		}
-		lib.OpCode(cpy, inputHandler, outputHandler)
+	etoa := make(chan int, 1)
+	atob := make(chan int)
+	btoc := make(chan int)
+	ctod := make(chan int)
+	dtoe := make(chan int)
+
+	halt := make(chan []int)
+
+	// Start all amplifiers - they will wait for input
+	go lib.OpCode(input, etoa, atob, halt)
+	go lib.OpCode(input, atob, btoc, halt)
+	go lib.OpCode(input, btoc, ctod, halt)
+	go lib.OpCode(input, ctod, dtoe, halt)
+	go lib.OpCode(input, dtoe, etoa, halt)
+
+	// initialize phase settings
+	etoa <- phase[0]
+	atob <- phase[1]
+	btoc <- phase[2]
+	ctod <- phase[3]
+	dtoe <- phase[4]
+
+	// Send first signal
+	etoa <- 0
+
+	// Wait until the sequence ends
+	for i := 0; i < 5; i++ {
+		<-halt
 	}
-	return nextInput
+
+	// read the result.
+	return <-etoa
 }
 
-func permutation(ints []int) (permutations [][]int) {
-	// Must me declared, or can't recurse
-	var rc func([]int, int)
-	rc = func(a []int, k int) {
-		if k == len(a) {
-			permutations = append(permutations, append([]int{}, a...))
-		} else {
-			for i := k; i < len(ints); i++ {
-				a[k], a[i] = a[i], a[k]
-				rc(a, k+1)
-				a[k], a[i] = a[i], a[k]
-			}
+func permutation(values []int) (result [][]int) {
+	if len(values) == 1 {
+		result = append(result, values)
+		return result
+	}
+	for i, current := range values {
+		others := make([]int, 0, len(values)-1)
+		others = append(others, values[:i]...)
+		others = append(others, values[i+1:]...)
+		for _, other := range permutation(others) {
+			result = append(result, append(other, current))
 		}
 	}
-	rc(ints, 0)
-
-	return permutations
+	return result
 }

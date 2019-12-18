@@ -1,20 +1,20 @@
-package main
+package day6
 
 import (
-	"fmt"
-	"io/ioutil"
 	"strings"
+
+	"alde.nu/advent/lib"
+	"github.com/sirupsen/logrus"
 )
 
-func main() {
-	input, err := ioutil.ReadFile("input.txt")
-	if err != nil {
-		panic(err)
-	}
-	planets := parse(strings.TrimSpace(string(input)))
-	fmt.Printf("total orbits: %d\n", planets.countAllOrbits())
+// Run todays challenge
+func Run() {
+	input := lib.ReadFile("day6/input.txt")
+	planets := parse(input)
+	logrus.Info("Day 6")
+	logrus.WithField("orbits", planets.countAllOrbits()).Info("total orbits")
 
-	fmt.Printf("orbital transfers: %d\n", planets.getDistance("YOU", "SAN"))
+	logrus.WithField("transfers", planets.getDistance("YOU", "SAN")).Info("transfers to reach SAN")
 }
 
 func parse(input string) Planets {
@@ -30,8 +30,10 @@ func parse(input string) Planets {
 	return planets
 }
 
+// Planets map
 type Planets map[string]Planet
 
+// Planet struct
 type Planet struct {
 	Name   string
 	Orbits int

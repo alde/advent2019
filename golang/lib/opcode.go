@@ -1,142 +1,114 @@
 package lib
 
-import (
-	"fmt"
+// OpCodes
+const (
+	Add         = 1
+	Multiply    = 2
+	Read        = 3
+	Write       = 4
+	JumpIfTrue  = 5
+	JumpIfFalse = 6
+	LessThan    = 7
+	Equal       = 8
+	Halt        = 99
 )
 
-// ResetCode resets the input code
-func ResetCode(input []int, noun int, verb int) ([]int, error) {
-	input[0] = noun
-	input[1] = verb
+// OpCode implements the computer
+func OpCode(program []int, input <-chan int, output chan<- int, halt chan<- []int) {
+	memory := make([]int, len(program))
+	copy(memory, program)
 
-	return OpCode(input, func() (i int) {
-		fmt.Scan(&i)
-		return i
-	}, func(i int) {
-		fmt.Printf("%d\n", i)
-	})
-}
+	ip := 0
+	for {
+		instruction := memory[ip]
+		opcode := instruction % 100
 
-// OpCode runs the computer
-func OpCode(input []int, inputHandler func() int, outputHandler func(i int)) ([]int, error) {
-	return record(input, inputHandler, outputHandler, 0)
-}
+		val := func(offset int) int {
+			parameter := memory[offset+ip]
+			mode := instruction / pow(10, offset+1) % 10
+			switch mode {
+			case 0: // position mode
+				return memory[parameter]
+			case 1: // immediate mode
+				return parameter
+			default:
+				panic("invalid mode")
+			}
+		}
 
-func record(input []int, inputHandler func() int, outputHandler func(i int), offset int) ([]int, error) {
-	if input[offset] == 99 {
-		return input, nil
+		switch opcode {
+		case Add:
+			a, b, c := val(1), val(2), memory[ip+3]
+			memory[c] = a + b
+			ip += 4
+
+		case Multiply:
+			a, b, c := val(1), val(2), memory[ip+3]
+			memory[c] = a * b
+			ip += 4
+
+		case Read:
+			a := memory[ip+1]
+			memory[a] = <-input
+			ip += 2
+
+		case Write:
+			a := val(1)
+			output <- a
+			ip += 2
+
+		case JumpIfTrue:
+			a, b := val(1), val(2)
+			if a != 0 {
+				ip = b
+			} else {
+				ip += 3
+			}
+
+		case JumpIfFalse:
+			a, b := val(1), val(2)
+			if a == 0 {
+				ip = b
+			} else {
+				ip += 3
+			}
+
+		case LessThan:
+			a, b, c := val(1), val(2), memory[ip+3]
+			if a < b {
+				memory[c] = 1
+			} else {
+				memory[c] = 0
+			}
+			ip += 4
+
+		case Equal:
+			a, b, c := val(1), val(2), memory[ip+3]
+			if a == b {
+				memory[c] = 1
+			} else {
+				memory[c] = 0
+			}
+			ip += 4
+
+		case Halt:
+			halt <- memory
+			return
+
+		default:
+			panic("unexpected opcode")
+		}
 	}
-	var pointer int
-	i := input[offset]
-	modeSet, operation := extractOpcode(i)
+}
 
-	switch operation {
-	case 1:
-		pointer = addition(input, offset, modeSet)
-	case 2:
-		pointer = multiplication(input, offset, modeSet)
-	case 3:
-		pointer = readInput(input, offset, modeSet, inputHandler)
-	case 4:
-		pointer = output(input, offset, modeSet, outputHandler)
-	case 5:
-		pointer = jumpIfTrue(input, offset, modeSet)
-	case 6:
-		pointer = jumpIfFalse(input, offset, modeSet)
-	case 7:
-		pointer = lessThan(input, offset, modeSet)
-	case 8:
-		pointer = equals(input, offset, modeSet)
-	default:
-		return nil, fmt.Errorf("unknown operation %d", input[offset])
+func pow(a, b int) int {
+	p := 1
+	for b > 0 {
+		if b&1 != 0 {
+			p *= a
+		}
+		b >>= 1
+		a *= a
 	}
-	return record(input, inputHandler, outputHandler, pointer)
-}
-
-func modeSet(i int, index int, memo []int) []int {
-	if index == -1 {
-		return memo
-	}
-	memo[index] = i % 10
-	return modeSet(i/10, index-1, memo)
-}
-
-func extractOpcode(i int) ([]int, int) {
-	return modeSet(i/100, 2, []int{0, 0, 0}), i % 100
-}
-func val(input []int, offset int, modeSet int) int {
-	if modeSet == 0 {
-		return input[input[offset]]
-	}
-	return input[offset]
-}
-func addition(input []int, offset int, modeSet []int) int {
-	a := val(input, offset+1, modeSet[2])
-	b := val(input, offset+2, modeSet[1])
-	c := input[offset+3]
-	input[c] = a + b
-	return offset + 4
-}
-
-func multiplication(input []int, offset int, modeSet []int) int {
-	a := val(input, offset+1, modeSet[2])
-	b := val(input, offset+2, modeSet[1])
-	c := input[offset+3]
-	input[c] = a * b
-	return offset + 4
-}
-
-func readInput(input []int, offset int, modeSet []int, handler func() int) int {
-	i := handler()
-	target := input[offset+1]
-	input[target] = i
-	return offset + 2
-}
-
-func output(input []int, offset int, modeSet []int, handler func(i int)) int {
-	target := input[offset+1]
-	handler(input[target])
-	return offset + 2
-}
-
-func jumpIfTrue(input []int, offset int, modeSet []int) int {
-	a := val(input, offset+1, modeSet[2])
-	b := val(input, offset+2, modeSet[1])
-	if a != 0 {
-		return b
-	}
-	return offset + 3
-}
-
-func jumpIfFalse(input []int, offset int, modeSet []int) int {
-	a := val(input, offset+1, modeSet[2])
-	b := val(input, offset+2, modeSet[1])
-	if a == 0 {
-		return b
-	}
-	return offset + 3
-}
-
-func lessThan(input []int, offset int, modeSet []int) int {
-	a := val(input, offset+1, modeSet[2])
-	b := val(input, offset+2, modeSet[1])
-	c := input[offset+3]
-	if a < b {
-		input[c] = 1
-	} else {
-		input[c] = 0
-	}
-	return offset + 4
-}
-
-func equals(input []int, offset int, modeSet []int) int {
-	a := val(input, offset+1, modeSet[2])
-	b := val(input, offset+2, modeSet[1])
-	c := input[offset+3]
-	if a == b {
-		input[c] = 1
-	} else {
-		input[c] = 0
-	}
-	return offset + 4
+	return p
 }
