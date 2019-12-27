@@ -14,20 +14,22 @@ func Run() {
 	logrus.Info("Day 3")
 	input := parse(lib.ReadFile("day3/input"))
 
-	result1 := manhattan(input)
+	result1, result2 := manhattan(input)
 	logrus.WithField("distance", result1).Info("manhattan")
+	logrus.WithField("steps", result2).Info("fewest combined steps")
 }
 
-func drawLine(input []string, out chan<- []point) {
+func drawLine(input []string, out chan<- res) {
 	line := []point{}
+	stepsToPos := make(map[point]int)
 	stepCount := 0
 	x := 0
 	y := 0
 	for _, step := range input {
-		stepCount++
 		direction := step[0]
 		steps, _ := strconv.Atoi(step[1:])
 		for s := 0; s < steps; s++ {
+			stepCount++
 			switch direction {
 			case 'R':
 				x++
@@ -38,36 +40,57 @@ func drawLine(input []string, out chan<- []point) {
 			case 'D':
 				y--
 			}
-			line = append(line, point{x: x, y: y})
+			p := point{x: x, y: y}
+			if _, ok := stepsToPos[p]; !ok {
+				stepsToPos[p] = stepCount
+			}
+			line = append(line, p)
 		}
 	}
-	out <- line
+	out <- res{line, stepsToPos}
 }
 
-func manhattan(input [][]string) int {
-	line1 := make(chan []point)
-	line2 := make(chan []point)
-	go drawLine(input[0], line1)
-	go drawLine(input[1], line2)
-	var o1, o2 []point
+type res struct {
+	line  []point
+	steps map[point]int
+}
+
+func manhattan(input [][]string) (int, int) {
+	res1 := make(chan res)
+	res2 := make(chan res)
+	go drawLine(input[0], res1)
+	go drawLine(input[1], res2)
+	var o1, o2 res
 loop:
 	for {
 		select {
-		case o1 = <-line1:
-			if o2 != nil {
+		case o1 = <-res1:
+			if o2.line != nil {
 				break loop
 			}
-		case o2 = <-line2:
-			if o1 != nil {
+		case o2 = <-res2:
+			if o1.line != nil {
 				break loop
 			}
 		}
 	}
-	intersection := intersect(o1, o2)
+	intersection := intersect(o1.line, o2.line)
+	var i2 []point
+	copy(i2, intersection)
 	sort.Slice(intersection, func(i, j int) bool {
 		return intersection[i].distance() < intersection[j].distance()
 	})
-	return intersection[0].distance()
+	var shortest int
+	for _, p := range intersection {
+		current := o1.steps[p] + o2.steps[p]
+		if shortest == 0 || current < shortest {
+			shortest = current
+		}
+	}
+
+	manhattan := intersection[0].distance()
+
+	return manhattan, shortest
 }
 
 type point struct {
