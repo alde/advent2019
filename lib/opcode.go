@@ -1,5 +1,9 @@
 package lib
 
+import (
+	"github.com/sirupsen/logrus"
+)
+
 // OpCodes
 const (
 	Add         = 1
@@ -32,7 +36,8 @@ func OpCode(program []int, input <-chan int, output chan<- int, halt chan<- []in
 			case 1: // immediate mode
 				return parameter
 			default:
-				panic("invalid mode")
+				logrus.WithField("mode", mode).Fatal("invalid mode")
+				return -1
 			}
 		}
 
@@ -96,7 +101,8 @@ func OpCode(program []int, input <-chan int, output chan<- int, halt chan<- []in
 			return
 
 		default:
-			panic("unexpected opcode")
+			logrus.WithField("opcode", opcode).Fatal("unexpected opcode")
+			return
 		}
 	}
 }
