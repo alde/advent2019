@@ -4,7 +4,6 @@ import "github.com/sirupsen/logrus"
 
 // Run todays challenge
 func Run() {
-	logrus.Info("Day 4")
 	count1 := partOne(256310, 732736)
 	logrus.WithField("passcodes", count1).Info("in given range")
 

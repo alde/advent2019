@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Run days solution
 func Run() {
-	logrus.Info("Day 2")
 	input := parse(lib.ReadFile("day2/input"))
 
 	result1 := gravityAssist(input)
@@ -19,7 +19,7 @@ func Run() {
 	result2 := findInputs(input, 19690720)
 	logrus.WithFields(logrus.Fields{
 		"inputs": result2,
-		"code": 100 * result2.noun + result2.verb,
+		"code":   100*result2.noun + result2.verb,
 	}).Info("inputs")
 }
 
@@ -36,6 +36,7 @@ type inputs struct {
 	noun int
 	verb int
 }
+
 func findInputs(input []int, targetSignal int) *inputs {
 	for noun := 0; noun < 99; noun++ {
 		for verb := 0; verb < 99; verb++ {
@@ -55,7 +56,7 @@ func gravityAssist(input []int) int {
 	out := make(chan []int)
 	go lib.OpCode(input, nil, nil, out)
 	select {
-	case res := <- out:
+	case res := <-out:
 		return res[0]
 	}
 	logrus.Fatal("should never get here")

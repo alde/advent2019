@@ -11,7 +11,6 @@ import (
 func Run() {
 	input := lib.ReadFile("day6/input.txt")
 	planets := parse(input)
-	logrus.Info("Day 6")
 	logrus.WithField("orbits", planets.countAllOrbits()).Info("total orbits")
 
 	logrus.WithField("transfers", planets.getDistance("YOU", "SAN")).Info("transfers to reach SAN")

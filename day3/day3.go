@@ -12,7 +12,6 @@ import (
 
 // Run todays challenge
 func Run() {
-	logrus.Info("Day 3")
 	input := parse(lib.ReadFile("day3/input"))
 
 	result1, result2 := manhattan(input)

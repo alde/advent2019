@@ -12,7 +12,6 @@ import (
 func Run() {
 	input := lib.ReadFile("day8/input.txt")
 	layers := parseLayers(input, 25, 6)
-	logrus.Info("Day 8")
 	checksum := checksum(layers)
 	logrus.WithField("checksum", checksum).Info("checksum for image")
 	flattened := flatten(layers, 25*6)
