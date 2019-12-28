@@ -6,15 +6,16 @@ import (
 
 // OpCodes
 const (
-	Add         = 1
-	Multiply    = 2
-	Read        = 3
-	Write       = 4
-	JumpIfTrue  = 5
-	JumpIfFalse = 6
-	LessThan    = 7
-	Equal       = 8
-	Halt        = 99
+	Add                = 1
+	Multiply           = 2
+	Read               = 3
+	Write              = 4
+	JumpIfTrue         = 5
+	JumpIfFalse        = 6
+	LessThan           = 7
+	Equal              = 8
+	AdjustRelativeBase = 9
+	Halt               = 99
 )
 
 // OpCode implements the computer
@@ -22,81 +23,80 @@ func OpCode(program []int, input <-chan int, output chan<- int, halt chan<- []in
 	memory := make([]int, len(program))
 	copy(memory, program)
 
+	relbase := 0
 	ip := 0
 	for {
 		instruction := memory[ip]
 		opcode := instruction % 100
 
-		val := func(offset int) int {
-			parameter := memory[offset+ip]
+		arg := func(offset int) (addr int) {
 			mode := instruction / pow(10, offset+1) % 10
 			switch mode {
-			case 0: // position mode
-				return memory[parameter]
-			case 1: // immediate mode
-				return parameter
-			default:
-				logrus.WithField("mode", mode).Fatal("invalid mode")
-				return -1
+			case 0:
+				addr = memory[ip+offset]
+			case 1:
+				addr = ip + offset
+			case 2:
+				addr = relbase + memory[ip+offset]
 			}
+			if len(memory) <= addr {
+				memory = append(memory, make([]int, addr-len(memory)+1)...)
+			}
+			return
 		}
 
 		switch opcode {
-		case Add:
-			a, b, c := val(1), val(2), memory[ip+3]
-			memory[c] = a + b
+		case Add: // 1
+			memory[arg(3)] = memory[arg(1)] + memory[arg(2)]
 			ip += 4
 
-		case Multiply:
-			a, b, c := val(1), val(2), memory[ip+3]
-			memory[c] = a * b
+		case Multiply: // 2
+			memory[arg(3)] = memory[arg(1)] * memory[arg(2)]
 			ip += 4
 
-		case Read:
-			a := memory[ip+1]
-			memory[a] = <-input
+		case Read: // 3
+			memory[arg(1)] = <-input
 			ip += 2
 
-		case Write:
-			a := val(1)
-			output <- a
+		case Write: // 4
+			output <- memory[arg(1)]
 			ip += 2
 
-		case JumpIfTrue:
-			a, b := val(1), val(2)
-			if a != 0 {
-				ip = b
-			} else {
-				ip += 3
+		case JumpIfTrue: // 5
+			if memory[arg(1)] != 0 {
+				ip = memory[arg(2)]
+				continue
 			}
+			ip += 3
 
-		case JumpIfFalse:
-			a, b := val(1), val(2)
-			if a == 0 {
-				ip = b
-			} else {
-				ip += 3
+		case JumpIfFalse: // 6
+			if memory[arg(1)] == 0 {
+				ip = memory[arg(2)]
+				continue
 			}
+			ip += 3
 
-		case LessThan:
-			a, b, c := val(1), val(2), memory[ip+3]
-			if a < b {
-				memory[c] = 1
+		case LessThan: // 7
+			if memory[arg(1)] < memory[arg(2)] {
+				memory[arg(3)] = 1
 			} else {
-				memory[c] = 0
+				memory[arg(3)] = 0
 			}
 			ip += 4
 
-		case Equal:
-			a, b, c := val(1), val(2), memory[ip+3]
-			if a == b {
-				memory[c] = 1
+		case Equal: // 8
+			if memory[arg(1)] == memory[arg(2)] {
+				memory[arg(3)] = 1
 			} else {
-				memory[c] = 0
+				memory[arg(3)] = 0
 			}
 			ip += 4
 
-		case Halt:
+		case AdjustRelativeBase: // 9
+			relbase += memory[arg(1)]
+			ip += 2
+
+		case 99:
 			halt <- memory
 			return
 
