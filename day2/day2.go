@@ -59,6 +59,4 @@ func gravityAssist(input []int) int {
 	case res := <-out:
 		return res[0]
 	}
-	logrus.Fatal("should never get here")
-	return -1
 }
