@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"alde.nu/advent/day1"
+	"alde.nu/advent/day10"
 	"alde.nu/advent/day2"
 	"alde.nu/advent/day3"
 	"alde.nu/advent/day4"
@@ -13,21 +14,20 @@ import (
 	"alde.nu/advent/day7"
 	"alde.nu/advent/day8"
 	"alde.nu/advent/day9"
-	"alde.nu/advent/day10"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
 	solutions := map[int]func(){
-		1: day1.Run,
-		2: day2.Run,
-		3: day3.Run,
-		4: day4.Run,
-		5: day5.Run,
-		6: day6.Run,
-		7: day7.Run,
-		8: day8.Run,
-		9: day9.Run,
+		1:  day1.Run,
+		2:  day2.Run,
+		3:  day3.Run,
+		4:  day4.Run,
+		5:  day5.Run,
+		6:  day6.Run,
+		7:  day7.Run,
+		8:  day8.Run,
+		9:  day9.Run,
 		10: day10.Run,
 	}
 	execute := func(day int) {
