@@ -13,6 +13,7 @@ import (
 	"alde.nu/advent/day7"
 	"alde.nu/advent/day8"
 	"alde.nu/advent/day9"
+	"alde.nu/advent/day10"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,6 +28,7 @@ func main() {
 		7: day7.Run,
 		8: day8.Run,
 		9: day9.Run,
+		10: day10.Run,
 	}
 	execute := func(day int) {
 		logrus.Infof("Day %d\n", day)
